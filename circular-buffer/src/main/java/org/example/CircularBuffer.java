@@ -1,32 +1,38 @@
 package org.example;
 
-import java.util.ArrayList;
-import java.util.List;
 
 public class CircularBuffer<T> {
     private static final int DEFAULT_CAPACITY = 10;
-    private int capacity;
-    private List <T> data;
-    private volatile int readSequenceCounter;
-    private volatile int writeSequenceCounter;
-    public CircularBuffer(int capacity){
-        this.capacity = (capacity < 1) ? DEFAULT_CAPACITY : capacity;
-        this.data = new ArrayList<>(this.capacity);
-        this.readSequenceCounter = 0;
-        this.writeSequenceCounter = -1;
+    private final int size;
+    final T [] data;
+    private volatile int readIndex;
+    private volatile int writeIndex;
+    public CircularBuffer(int size){
+        this.size = (size < 10) ? DEFAULT_CAPACITY : size;
+        this.data = (T []) new Object[this.size];
+        this.readIndex = 0;
+        this.writeIndex = -1;
     }
 
-    public void putIn(T element){
-        if((writeSequenceCounter - readSequenceCounter) + 1 != this.capacity){
-            data.add(++writeSequenceCounter % capacity, element);
+    public synchronized boolean putIn(T element){
+        boolean bufferIsFull = (writeIndex - readIndex) + 1 == this.size;
+        if(!bufferIsFull){
+            int nextWriteSeq = writeIndex + 1;
+            data[nextWriteSeq % size] = element;
+            writeIndex++;
+            return true;
         }
+        return false;
     }
 
-    public T putOut(){
-        T element = null;
-        boolean isBufferEmpty = writeSequenceCounter < readSequenceCounter;
-        if(!isBufferEmpty)
-            element = data.get(readSequenceCounter++ % capacity);
-        return element;
+    public synchronized T putOut(){
+        boolean bufferIsEmpty = writeIndex < readIndex;
+        if(!bufferIsEmpty){
+            int currentIndex = readIndex++ % size;
+            T element = data[currentIndex];
+            data[currentIndex] = null;
+            return element;
+        }
+        return null;
     }
 }
