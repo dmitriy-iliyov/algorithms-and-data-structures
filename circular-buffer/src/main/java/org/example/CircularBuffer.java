@@ -15,8 +15,7 @@ public class CircularBuffer<T> {
     }
 
     public synchronized boolean putIn(T element){
-        boolean bufferIsFull = (writeIndex - readIndex) + 1 == this.size;
-        if(!bufferIsFull){
+        if(!((writeIndex - readIndex) + 1 == this.size)){
             int nextWriteSeq = writeIndex + 1;
             data[nextWriteSeq % size] = element;
             writeIndex++;
@@ -26,8 +25,7 @@ public class CircularBuffer<T> {
     }
 
     public synchronized T putOut(){
-        boolean bufferIsEmpty = writeIndex < readIndex;
-        if(!bufferIsEmpty){
+        if(!(writeIndex < readIndex)){
             int currentIndex = readIndex++ % size;
             T element = data[currentIndex];
             data[currentIndex] = null;
