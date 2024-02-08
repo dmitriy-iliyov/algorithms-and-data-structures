@@ -47,3 +47,4 @@ TestResults.xml
 .DS_Store
 .idea/*
 .idea/
+CMakeLists.txt
